@@ -64,9 +64,9 @@ class Tokenizer:
             return pieces
         raise RuntimeError
 
-    def add_special_tokens(self, tokens):
+    def add_tokens(self, tokens):
         if self.backend == "huggingface":
-            self.processor.add_special_tokens(tokens)
+            self.processor.add_tokens(tokens)
         elif self.backend == "sentencepiece":
             raise NotImplementedError
         else:

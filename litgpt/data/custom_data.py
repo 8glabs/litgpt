@@ -23,7 +23,7 @@ source_of_video = '<source>'
 resolution_of_video = '<res>'
 start_of_output_visual, end_of_output_visual = '<bov_o>', '<eov_o>'
 start_of_output_audio, end_of_output_audio = '<boa_o>', '<eoa_o>'
-modal_special = [start_of_seq, end_of_seq, start_of_text, end_of_text, start_of_input_visual, end_of_input_visual, start_of_input_audio, end_of_input_audio, source_of_video, resolution_of_video, start_of_output_visual, end_of_output_visual, start_of_output_audio, end_of_output_audio]
+modal_specials = [start_of_seq, end_of_seq, start_of_text, end_of_text, start_of_input_visual, end_of_input_visual, start_of_input_audio, end_of_input_audio, source_of_video, resolution_of_video, start_of_output_visual, end_of_output_visual, start_of_output_audio, end_of_output_audio]
 
 text_vocab_size=32000
 audio_codebook_size=1024
@@ -110,8 +110,9 @@ class CustomData(DataModule):
         self.data_path_val = str(self.data_path).rstrip("/") + "/val"
 
     def add_custom_tokens(self) -> None:
-        tokens = self.tokenizer.get_vocab()
-        self.tokenizer.add_special_tokens(modal_special-tokens)
+        for modal_special in modal_specials:
+            if modal_special not in self.tokenizer.get_vocab():
+                self.tokenizer.add_tokens(modal_special)
         for modality in modal_special_str.keys():
             if modality == "text":
                 continue
