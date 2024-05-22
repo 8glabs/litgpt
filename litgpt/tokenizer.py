@@ -19,7 +19,7 @@ source_of_video = '<source>'
 resolution_of_video = '<res>'
 start_of_output_visual, end_of_output_visual = '<bov_o>', '<eov_o>'
 start_of_output_audio, end_of_output_audio = '<boa_o>', '<eoa_o>'
-modal_specials = [start_of_seq, end_of_seq, start_of_text, end_of_text, start_of_input_visual, end_of_input_visual, start_of_input_audio, end_of_input_audio, source_of_video, resolution_of_video, start_of_output_visual, end_of_output_visual, start_of_output_audio, end_of_output_audio]
+modal_specials = [start_of_seq, end_of_seq, start_of_text, end_of_text, source_of_video, resolution_of_video, start_of_output_visual, end_of_output_visual, start_of_output_audio, end_of_output_audio]
 
 text_vocab_size=32000
 audio_codebook_size=1024
@@ -144,7 +144,7 @@ class Tokenizer:
             end = modal_special_str[modality]["eos"]
             modality_vocab_size = modal_special_str[modality]["vocab_size"]
             if start not in self.processor.get_vocab():
-                tokens = [f"<{prefix}{x}>" for x in range(modality_vocab_size)]
+                tokens = [f"<{prefix}{x}>" for x in range(modality_vocab_size)] + [start, end]
                 self.add_tokens(tokens)
 
     def token_to_id(self, token: str) -> int:
