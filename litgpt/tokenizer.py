@@ -144,7 +144,7 @@ class Tokenizer:
             end = modal_special_str[modality]["eos"]
             modality_vocab_size = modal_special_str[modality]["vocab_size"]
             if start not in self.processor.get_vocab():
-                tokens = [f"<{prefix}{x}>" for x in range(modality_vocab_size)] + [start, end]
+                tokens = [f"<{prefix}{x}>" for x in range(modality_vocab_size)]
                 self.add_tokens(tokens)
 
     def token_to_id(self, token: str) -> int:
