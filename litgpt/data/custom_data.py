@@ -160,14 +160,14 @@ class CustomData(DataModule):
             fn=partial(tokenize, split_dataset["train"]),
             inputs=list(range(len(split_dataset["train"]))),
             output_dir=self.data_path_train,
-            num_workers=(num_workers),
+            num_workers=(self.num_workers),
             chunk_bytes="200MB",
         )
         optimize(
             fn=partial(tokenize, split_dataset["val"]),
             inputs=list(range(len(split_dataset["val"]))),
             output_dir=self.data_path_val,
-            num_workers=(num_workers),
+            num_workers=(self.num_workers),
             chunk_bytes="200MB",
         )
 
