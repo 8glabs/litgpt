@@ -120,7 +120,7 @@ class CustomData(DataModule):
             start = modal_special_str[modality]["sos"]
             end = modal_special_str[modality]["eos"]
             modality_vocab_size = modal_special_str[modality]["vocab_size"]
-            if start not in tokens:
+            if start not in self.tokenizer.get_vocab():
                 tokens = [f"<{prefix}{x}>" for x in range(modality_vocab_size)] + [start, end]
                 self.tokenizer.add_tokens(tokens)
 
