@@ -7,63 +7,21 @@ from typing import Optional, Union
 
 from torch.utils.data import Dataset, DataLoader, random_split
 
-from litgpt import Tokenizer
+from litgpt import Tokenizer, Token
 from litgpt.data import DataModule
-
-text_prefix = ""
-audio_prefix = "👂"
-video_prefix = "📹"
-task_prefix = "📋"
-
-start_of_seq, end_of_seq = '<sos>', '<eos>'
-start_of_text, end_of_text = '<bot_i>', '<eot_i>'
-start_of_input_visual, end_of_input_visual = '<bov_i>', '<eov_i>'
-start_of_input_audio, end_of_input_audio = '<boa_i>', '<eoa_i>'
-source_of_video = '<source>'
-resolution_of_video = '<res>'
-start_of_output_visual, end_of_output_visual = '<bov_o>', '<eov_o>'
-start_of_output_audio, end_of_output_audio = '<boa_o>', '<eoa_o>'
-modal_specials = [start_of_seq, end_of_seq, start_of_text, end_of_text, start_of_input_visual, end_of_input_visual, start_of_input_audio, end_of_input_audio, source_of_video, resolution_of_video, start_of_output_visual, end_of_output_visual, start_of_output_audio, end_of_output_audio]
-
-text_vocab_size=32000
-audio_codebook_size=1024
-audio_codebook_num=16
-audio_vocab_size=audio_codebook_size * audio_codebook_num
-visual_vocab_size=2**18
 
 
 task2tokens = {
-    "text-video": f"{task_prefix}0",
-    "image-vodeo": f"{task_prefix}1",
-    "unconditional video": f"{task_prefix}2",
-    "Audioavatar talkingheads": f"{task_prefix}3",
-    "Audioavatar singingheads": f"{task_prefix}4",
-    "text-image": f"{task_prefix}5",
-}
-
-modal_special_str = {
-    "text":{
-        "prefix": text_prefix,
-        "sos": start_of_text,
-        "eos": end_of_text,
-        "vocab_size": text_vocab_size
-    },
-    "audio":{
-        "prefix": audio_prefix,
-        "sos": start_of_input_audio,
-        "eos": end_of_input_audio,
-        "vocab_size": audio_vocab_size
-    },
-    "visual":{
-        "prefix": video_prefix,
-        "sos": start_of_input_visual,
-        "eos": end_of_input_visual,
-        "vocab_size": visual_vocab_size
-    },
+    "text-video": f"{Token.modal_specials.task_prefix}0",
+    "image-vodeo": f"{Token.modal_specials.task_prefix}1",
+    "unconditional video": f"{Token.modal_specials.task_prefix}2",
+    "Audioavatar talkingheads": f"{Token.modal_specials.task_prefix}3",
+    "Audioavatar singingheads": f"{Token.modal_specials.task_prefix}4",
+    "text-image": f"{Token.modal_specials.task_prefix}5",
 }
 
 # task_id, text, input_visual, input_audio, output_visual, output_audio
-task_prompt = f"{start_of_seq}%s{start_of_text}%s{end_of_text}{start_of_input_visual}%s{end_of_input_visual}{start_of_input_audio}%s{end_of_input_audio}{source_of_video}{resolution_of_video}{start_of_output_visual}%s{end_of_output_visual}{start_of_output_audio}%s{end_of_output_audio}{end_of_seq}"
+task_prompt = f"{Token.modal_specials.start_of_seq}%s{Token.modal_specials.start_of_text}%s{Token.modal_specials.end_of_text}{Token.modal_specials.start_of_input_visual}%s{Token.modal_specials.end_of_input_visual}{Token.modal_specials.start_of_input_audio}%s{Token.modal_specials.end_of_input_audio}{Token.modal_specials.source_of_video}{Token.modal_specials.resolution_of_video}{Token.modal_specials.start_of_output_visual}%s{Token.modal_specials.end_of_output_visual}{Token.modal_specials.start_of_output_audio}%s{Token.modal_specials.end_of_output_audio}{Token.modal_specials.end_of_seq}"
 
 # 自定义数据集类
 class CustomDataset(Dataset):
@@ -109,28 +67,12 @@ class CustomData(DataModule):
         self.data_path_train = str(self.data_path).rstrip("/") + "/train"
         self.data_path_val = str(self.data_path).rstrip("/") + "/val"
 
-    def add_custom_tokens(self) -> None:
-        for modal_special in modal_specials:
-            if modal_special not in self.tokenizer.get_vocab():
-                self.tokenizer.add_tokens([modal_special])
-        for modality in modal_special_str.keys():
-            if modality == "text":
-                continue
-            prefix = modal_special_str[modality]["prefix"]
-            start = modal_special_str[modality]["sos"]
-            end = modal_special_str[modality]["eos"]
-            modality_vocab_size = modal_special_str[modality]["vocab_size"]
-            if start not in self.tokenizer.get_vocab():
-                tokens = [f"<{prefix}{x}>" for x in range(modality_vocab_size)] + [start, end]
-                self.tokenizer.add_tokens(tokens)
-
     def connect(
         self, tokenizer: Optional[Tokenizer] = None, batch_size: int = 1, max_seq_length: Optional[int] = 2048
     ) -> None:
         self.tokenizer = tokenizer
         self.batch_size = batch_size
         self.seq_length = max_seq_length + 1  # Increase by one because we need the next token as well
-        self.add_custom_tokens()
 
     def prepare_data(self) -> None:
         from datasets import Dataset, load_dataset

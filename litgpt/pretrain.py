@@ -104,6 +104,7 @@ def setup(
     out_dir = init_out_dir(out_dir)
     # in case the dataset requires the Tokenizer
     tokenizer = Tokenizer(tokenizer_dir) if tokenizer_dir is not None else None
+    tokenizer.add_custom_tokens()
 
     logger = choose_logger(
         logger_name, out_dir, name=f"pretrain-{config.name}", resume=resume, log_interval=train.log_interval
@@ -157,6 +158,9 @@ def main(
 
     fabric.seed_everything(seed)  # same seed for every process to init model (FSDP)
 
+    embedding_size = config.padded_vocab_size
+    if len(tokenizer.processor) > embedding_size:
+        config.padded_vocab_size = len(tokenizer.processor)
     t0 = time.perf_counter()
     with fabric.init_module(empty_init=True):
         model = GPT(config)
@@ -185,10 +189,6 @@ def main(
 
     train_dataloader, val_dataloader = get_dataloaders(fabric, data, tokenizer, train, model.max_seq_length)
     train_dataloader, val_dataloader = fabric.setup_dataloaders(train_dataloader, val_dataloader)
-
-    embedding_size = model.get_input_embeddings().weight.shape[0]
-    if len(tokenizer) > embedding_size:
-        model.resize_token_embeddings(len(tokenizer))
 
     if initial_checkpoint_dir:
         fabric.load_raw(initial_checkpoint_dir / "lit_model.pth", model)

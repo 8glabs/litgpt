@@ -6,7 +6,7 @@ import re
 from litgpt.model import GPT  # needs to be imported before config
 from litgpt.config import Config
 from litgpt.prompts import PromptStyle
-from litgpt.tokenizer import Tokenizer
+from litgpt.tokenizer import Tokenizer, Token
 
 # Suppress excessive warnings, see https://github.com/pytorch/pytorch/issues/111632
 pattern = re.compile(".*Profiler function .* will be ignored")

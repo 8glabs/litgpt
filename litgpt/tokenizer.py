@@ -6,6 +6,50 @@ from typing import Optional, Union
 
 import torch
 
+text_prefix = ""
+audio_prefix = "👂"
+video_prefix = "📹"
+task_prefix = "📋"
+
+start_of_seq, end_of_seq = '<sos>', '<eos>'
+start_of_text, end_of_text = '<bot_i>', '<eot_i>'
+start_of_input_visual, end_of_input_visual = '<bov_i>', '<eov_i>'
+start_of_input_audio, end_of_input_audio = '<boa_i>', '<eoa_i>'
+source_of_video = '<source>'
+resolution_of_video = '<res>'
+start_of_output_visual, end_of_output_visual = '<bov_o>', '<eov_o>'
+start_of_output_audio, end_of_output_audio = '<boa_o>', '<eoa_o>'
+modal_specials = [start_of_seq, end_of_seq, start_of_text, end_of_text, start_of_input_visual, end_of_input_visual, start_of_input_audio, end_of_input_audio, source_of_video, resolution_of_video, start_of_output_visual, end_of_output_visual, start_of_output_audio, end_of_output_audio]
+
+text_vocab_size=32000
+audio_codebook_size=1024
+audio_codebook_num=16
+audio_vocab_size=audio_codebook_size * audio_codebook_num
+visual_vocab_size=2**18
+
+modal_special_str = {
+    "text":{
+        "prefix": text_prefix,
+        "sos": start_of_text,
+        "eos": end_of_text,
+        "vocab_size": text_vocab_size
+    },
+    "audio":{
+        "prefix": audio_prefix,
+        "sos": start_of_input_audio,
+        "eos": end_of_input_audio,
+        "vocab_size": audio_vocab_size
+    },
+    "visual":{
+        "prefix": video_prefix,
+        "sos": start_of_input_visual,
+        "eos": end_of_input_visual,
+        "vocab_size": visual_vocab_size
+    },
+}
+
+class Token:
+    modal_specials = modal_specials + [text_prefix, audio_prefix, video_prefix, task_prefix]
 
 class Tokenizer:
     def __init__(self, checkpoint_dir: Union[Path, str]) -> None:
@@ -71,6 +115,21 @@ class Tokenizer:
             raise NotImplementedError
         else:
             raise RuntimeError
+
+    def add_custom_tokens(self) -> None:
+        for modal_special in modal_specials:
+            if modal_special not in self.processor.get_vocab():
+                self.add_tokens([modal_special])
+        for modality in modal_special_str.keys():
+            if modality == "text":
+                continue
+            prefix = modal_special_str[modality]["prefix"]
+            start = modal_special_str[modality]["sos"]
+            end = modal_special_str[modality]["eos"]
+            modality_vocab_size = modal_special_str[modality]["vocab_size"]
+            if start not in self.processor.get_vocab():
+                tokens = [f"<{prefix}{x}>" for x in range(modality_vocab_size)] + [start, end]
+                self.add_tokens(tokens)
 
     def token_to_id(self, token: str) -> int:
         if self.backend == "huggingface":
