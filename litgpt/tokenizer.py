@@ -18,15 +18,7 @@ class Tokenizer:
         self.eos_id = None
 
         # some checkpoints have both files, `.model` takes precedence
-        if (vocabulary_path := checkpoint_dir / "tokenizer.model").is_file():
-            from sentencepiece import SentencePieceProcessor
-
-            self.processor = SentencePieceProcessor(model_file=str(vocabulary_path))
-            self.backend = "sentencepiece"
-            self.bos_id = self.processor.bos_id()
-            self.eos_id = self.processor.eos_id()
-
-        elif (vocabulary_path := checkpoint_dir / "tokenizer.json").is_file():
+        if (vocabulary_path := checkpoint_dir / "tokenizer.json").is_file():
             from tokenizers import Tokenizer as HFTokenizer
 
             self.processor = HFTokenizer.from_file(str(vocabulary_path))
@@ -46,6 +38,13 @@ class Tokenizer:
                     self.bos_id = config.get("bos_token_id")
                 if self.eos_id is None:
                     self.eos_id = config.get("eos_token_id")
+        elif (vocabulary_path := checkpoint_dir / "tokenizer.model").is_file():
+            from sentencepiece import SentencePieceProcessor
+
+            self.processor = SentencePieceProcessor(model_file=str(vocabulary_path))
+            self.backend = "sentencepiece"
+            self.bos_id = self.processor.bos_id()
+            self.eos_id = self.processor.eos_id()
         else:
             raise NotImplementedError
 
@@ -56,6 +55,22 @@ class Tokenizer:
         if self.backend == "sentencepiece":
             return self.processor.vocab_size()
         raise RuntimeError
+
+    def get_vocab(self):
+        if self.backend == "huggingface":
+            return self.processor.get_vocab()
+        if self.backend == "sentencepiece":
+            pieces = [self.processor.id_to_piece(id) for id in range(self.processor.get_piece_size())]
+            return pieces
+        raise RuntimeError
+
+    def add_special_tokens(self, tokens):
+        if self.backend == "huggingface":
+            self.processor.add_special_tokens(tokens)
+        elif self.backend == "sentencepiece":
+            raise NotImplementedError
+        else:
+            raise RuntimeError
 
     def token_to_id(self, token: str) -> int:
         if self.backend == "huggingface":
