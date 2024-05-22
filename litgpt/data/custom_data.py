@@ -7,21 +7,8 @@ from typing import Optional, Union
 
 from torch.utils.data import Dataset, DataLoader, random_split
 
-from litgpt import Tokenizer, Token
+from litgpt import Tokenizer, Task2prompt, Task2tokens
 from litgpt.data import DataModule
-
-
-task2tokens = {
-    "text-video": f"{Token.modal_specials.task_prefix}0",
-    "image-vodeo": f"{Token.modal_specials.task_prefix}1",
-    "unconditional video": f"{Token.modal_specials.task_prefix}2",
-    "Audioavatar talkingheads": f"{Token.modal_specials.task_prefix}3",
-    "Audioavatar singingheads": f"{Token.modal_specials.task_prefix}4",
-    "text-image": f"{Token.modal_specials.task_prefix}5",
-}
-
-# task_id, text, input_visual, input_audio, output_visual, output_audio
-task_prompt = f"{Token.modal_specials.start_of_seq}%s{Token.modal_specials.start_of_text}%s{Token.modal_specials.end_of_text}{Token.modal_specials.start_of_input_visual}%s{Token.modal_specials.end_of_input_visual}{Token.modal_specials.start_of_input_audio}%s{Token.modal_specials.end_of_input_audio}{Token.modal_specials.source_of_video}{Token.modal_specials.resolution_of_video}{Token.modal_specials.start_of_output_visual}%s{Token.modal_specials.end_of_output_visual}{Token.modal_specials.start_of_output_audio}%s{Token.modal_specials.end_of_output_audio}{Token.modal_specials.end_of_seq}"
 
 # 自定义数据集类
 class CustomDataset(Dataset):
@@ -95,7 +82,7 @@ class CustomData(DataModule):
         split_dataset = {"train": train_dataset, "val": val_dataset}
 
         def tokenize(data: Dataset, index: int):
-            prompt = task_prompt % (task2tokens["text-video"], data[index], "", "", "", "")
+            prompt = Task2prompt % (Task2tokens["text-video"], data[index], "", "", "", "")
             yield self.tokenizer.encode(prompt, eos=False)
 
         optimize(

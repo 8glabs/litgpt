@@ -27,6 +27,18 @@ audio_codebook_num=16
 audio_vocab_size=audio_codebook_size * audio_codebook_num
 visual_vocab_size=2**18
 
+Task2tokens = {
+    "text-video": f"{task_prefix}0",
+    "image-vodeo": f"{task_prefix}1",
+    "unconditional video": f"{task_prefix}2",
+    "Audioavatar talkingheads": f"{task_prefix}3",
+    "Audioavatar singingheads": f"{task_prefix}4",
+    "text-image": f"{task_prefix}5",
+}
+
+# task_id, text, input_visual, input_audio, output_visual, output_audio
+Task2prompt = f"{start_of_seq}%s{start_of_text}%s{end_of_text}{start_of_input_visual}%s{end_of_input_visual}{start_of_input_audio}%s{end_of_input_audio}{source_of_video}{resolution_of_video}{start_of_output_visual}%s{end_of_output_visual}{start_of_output_audio}%s{end_of_output_audio}{end_of_seq}"
+
 modal_special_str = {
     "text":{
         "prefix": text_prefix,
@@ -47,9 +59,6 @@ modal_special_str = {
         "vocab_size": visual_vocab_size
     },
 }
-
-class Token:
-    modal_specials = modal_specials + [text_prefix, audio_prefix, video_prefix, task_prefix]
 
 class Tokenizer:
     def __init__(self, checkpoint_dir: Union[Path, str]) -> None:
