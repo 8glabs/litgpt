@@ -153,7 +153,7 @@ class CustomData(DataModule):
         split_dataset = {"train": train_dataset, "val": val_dataset}
 
         def tokenize(data: Dataset, index: int):
-            prompt = task_prompt % (task2tokens["text-video"], data[index]["text"], "", "", "", "")
+            prompt = task_prompt % (task2tokens["text-video"], data[index], "", "", "", "")
             yield self.tokenizer.encode(prompt, eos=False)
 
         optimize(
