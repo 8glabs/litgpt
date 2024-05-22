@@ -112,7 +112,7 @@ class CustomData(DataModule):
     def add_custom_tokens(self) -> None:
         for modal_special in modal_specials:
             if modal_special not in self.tokenizer.get_vocab():
-                self.tokenizer.add_tokens(modal_special)
+                self.tokenizer.add_tokens([modal_special])
         for modality in modal_special_str.keys():
             if modality == "text":
                 continue
