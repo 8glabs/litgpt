@@ -129,7 +129,7 @@ class CustomData(DataModule):
         self.tokenizer = tokenizer
         self.batch_size = batch_size
         self.seq_length = max_seq_length + 1  # Increase by one because we need the next token as well
-        self.add_custom_tokens(tokenizer)
+        self.add_custom_tokens()
 
     def prepare_data(self) -> None:
         from datasets import Dataset, load_dataset
