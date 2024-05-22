@@ -93,7 +93,7 @@ class CustomData(DataModule):
     data_path: Union[str, Path] = Path("data/custom_data")
     """The path to the data directory, containing two folders 'train' and 'val'
     which are the output of the preprocessing step. The path can also be a remote path (e.g., s3://)."""
-    val_split_fraction: float = 0.0005
+    val_split_fraction: float = 0.2
     """The fraction of data that should be put aside for validation."""
     seed: int = 42
     """The seed to use for shuffling the training data."""
