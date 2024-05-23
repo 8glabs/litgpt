@@ -33,7 +33,7 @@ class CustomDataset(Dataset):
 
 @dataclass
 class CustomData(DataModule):
-    """The OpenWebText data module for pretraining."""
+    """The CustomData data module for pretraining."""
 
     data_path: Union[str, Path] = Path("data/custom_data")
     """The path to the data directory, containing two folders 'train' and 'val'
@@ -66,11 +66,11 @@ class CustomData(DataModule):
         from litdata import optimize
 
         if str(self.data_path).startswith("s3://"):
-            print(f"The OpenWebText data path points to an S3 location: {self.data_path}. Skipping preprocessing.")
+            print(f"The CustomData data path points to an S3 location: {self.data_path}. Skipping preprocessing.")
             return
 
         if Path(self.data_path_train).is_dir() and Path(self.data_path_val).is_dir():
-            print(f"Found OpenWebText train and val dir: {self.data_path}. Skipping preprocessing.")
+            print(f"Found CustomData train and val dir: {self.data_path}. Skipping preprocessing.")
             return
 
         dataset = CustomDataset(self.data_path)
