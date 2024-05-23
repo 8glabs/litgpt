@@ -42,7 +42,7 @@ class CustomData(DataModule):
     """The fraction of data that should be put aside for validation."""
     seed: int = 42
     """The seed to use for shuffling the training data."""
-    num_workers: int = 1
+    num_workers: int = 0
     """The number of workers to use for the dataloaders."""
 
     tokenizer: Optional[Tokenizer] = field(default=None, repr=False, init=False)
