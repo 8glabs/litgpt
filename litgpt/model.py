@@ -21,7 +21,7 @@ class GPT(nn.Module):
         super().__init__()
         assert config.padded_vocab_size is not None
         self.config = config
-
+        print(config.padded_vocab_size)
         self.lm_head = nn.Linear(config.n_embd, config.padded_vocab_size, bias=config.lm_head_bias)
         self.transformer = nn.ModuleDict(
             dict(
