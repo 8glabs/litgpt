@@ -133,6 +133,7 @@ class Tokenizer:
             raise RuntimeError
 
     def add_custom_tokens(self) -> None:
+        return
         for modal_special in modal_specials:
             if modal_special not in self.processor.get_vocab():
                 self.add_tokens([modal_special])
