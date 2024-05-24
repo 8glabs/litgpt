@@ -47,7 +47,7 @@ class CustomData(DataModule):
 
     tokenizer: Optional[Tokenizer] = field(default=None, repr=False, init=False)
     batch_size: int = field(default=1, repr=False, init=False)
-    seq_length: int = field(default=128, repr=False, init=False)
+    seq_length: int = field(default=4096, repr=False, init=False)
 
     def __post_init__(self) -> None:
         # Could be a remote path (s3://) or a local path
