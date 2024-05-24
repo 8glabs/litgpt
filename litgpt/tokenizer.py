@@ -78,8 +78,11 @@ class Tokenizer:
                 checkpoint_dir,
                 model_max_length=4096,
             )
+            self.processor.pad_token = self.processor.eos_token
+            self.processor.padding_side = "right"
             self.bos_id = self.processor.bos_token_id
             self.eos_id = self.processor.eos_token_id
+            self.backend = "transformers"
         if (vocabulary_path := checkpoint_dir / "tokenizer.json").is_file():
             from tokenizers import Tokenizer as HFTokenizer
 
@@ -159,9 +162,9 @@ class Tokenizer:
             if start not in self.processor.get_vocab():
                 tokens = [f"<{prefix}{x}>" for x in range(modality_vocab_size)] + [start, end]
                 self.add_tokens(tokens)
-        if not os.path.exists(self.checkpoint_dir+"-addtokens"):
-            os.makedirs(self.checkpoint_dir+"-addtokens", exist_ok=True)
-        self.processor.save_pretrained(self.checkpoint_dir+"-addtokens")
+        if not os.path.exists(str(self.checkpoint_dir)+"-addtokens"):
+            os.makedirs(str(self.checkpoint_dir)+"-addtokens", exist_ok=True)
+        self.processor.save_pretrained(str(self.checkpoint_dir)+"-addtokens")
 
     def token_to_id(self, token: str) -> int:
         if self.backend == "huggingface":
@@ -195,7 +198,7 @@ class Tokenizer:
     ) -> torch.Tensor:
         if self.backend == "huggingface":
             tokens = self.processor.encode(string).ids
-        elif self.backend == "sentencepiece":
+        elif self.backend == "sentencepiece" or self.backend == "transformers":
             tokens = self.processor.encode(string)
         else:
             raise RuntimeError
