@@ -100,6 +100,7 @@ class Tokenizer:
             self.eos_id = self.processor.eos_id()
         else:
             raise NotImplementedError
+        self.add_custom_tokens()
 
     @property
     def vocab_size(self) -> int:

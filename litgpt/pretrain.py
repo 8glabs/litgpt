@@ -104,7 +104,6 @@ def setup(
     out_dir = init_out_dir(out_dir)
     # in case the dataset requires the Tokenizer
     tokenizer = Tokenizer(tokenizer_dir) if tokenizer_dir is not None else None
-    # tokenizer.add_custom_tokens()
 
     logger = choose_logger(
         logger_name, out_dir, name=f"pretrain-{config.name}", resume=resume, log_interval=train.log_interval
