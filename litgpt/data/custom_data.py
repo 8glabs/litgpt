@@ -84,6 +84,8 @@ class CustomData(DataModule):
         def tokenize(data: Dataset, index: int):
             # yield self.tokenizer.encode(data[index], eos=True)
             prompt = Task2prompt % (Task2tokens["text-video"], data[index], "", "", "", "")
+            if len(prompt) != self.seq_length:
+                prompt = (prompt+" aaaa"*self.seq_length)[: self.seq_length]
             yield self.tokenizer.encode(prompt, eos=False)
 
         optimize(
