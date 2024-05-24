@@ -74,7 +74,7 @@ class Tokenizer:
         # some checkpoints have both files, `.model` takes precedence
         if (vocabulary_path := checkpoint_dir / "tokenizer.json").is_file():
             from transformers import LlamaTokenizer
-            self.processor = LlamaTokenizer.from_file(str(vocabulary_path))
+            self.processor = LlamaTokenizer.from_pretrained(str(vocabulary_path))
             self.processor.pad_token = self.processor.eos_token
             self.processor.padding_side = "right"
             self.bos_id = self.processor.bos_token_id
