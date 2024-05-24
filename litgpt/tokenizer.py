@@ -80,7 +80,7 @@ class Tokenizer:
             self.bos_id = self.processor.bos_token_id
             self.eos_id = self.processor.eos_token_id
             self.backend = "transformers"
-        if (vocabulary_path := checkpoint_dir / "tokenizer.json").is_file():
+        elif (vocabulary_path := checkpoint_dir / "tokenizer.json").is_file():
             from tokenizers import Tokenizer as HFTokenizer
 
             self.processor = HFTokenizer.from_file(str(vocabulary_path))
@@ -161,9 +161,10 @@ class Tokenizer:
                 self.add_tokens(tokens)
         if not os.path.exists(str(self.checkpoint_dir)+"-addtokens"):
             os.makedirs(str(self.checkpoint_dir)+"-addtokens", exist_ok=True)
-        self.processor.save(str(self.checkpoint_dir)+"-addtokens"+"/tokenizer.json")
-        with open(str(self.checkpoint_dir)+"-addtokens"+"/tokenizer.json", "w") as f:
-            json.dump(self.processor.config.to_dict(), f)
+        self.processor.save_pretrained(str(self.checkpoint_dir)+"-addtokens")
+        # self.processor.save(str(self.checkpoint_dir)+"-addtokens"+"/tokenizer.json")
+        # with open(str(self.checkpoint_dir)+"-addtokens"+"/tokenizer.json", "w") as f:
+        #     json.dump(self.processor.config.to_dict(), f)
 
     def token_to_id(self, token: str) -> int:
         if self.backend == "huggingface":
