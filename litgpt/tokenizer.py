@@ -161,7 +161,6 @@ class Tokenizer:
                 self.add_tokens(tokens)
         if not os.path.exists(str(self.checkpoint_dir)+"-addtokens"):
             os.makedirs(str(self.checkpoint_dir)+"-addtokens", exist_ok=True)
-        self.processor.save_pretrained(str(self.checkpoint_dir)+"-addtokens")
         self.processor.save(str(self.checkpoint_dir)+"-addtokens"+"/tokenizer.json")
         with open(str(self.checkpoint_dir)+"-addtokens"+"/tokenizer.json", "w") as f:
             json.dump(self.processor.config.to_dict(), f)
