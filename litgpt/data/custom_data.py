@@ -7,7 +7,7 @@ from typing import Optional, Union
 
 from torch.utils.data import Dataset, DataLoader, random_split
 
-from litgpt import Tokenizer, Task2prompt, Task2tokens
+from litgpt import Tokenizer #, Task2prompt, Task2tokens
 from litgpt.data import DataModule
 
 # 自定义数据集类
@@ -82,8 +82,9 @@ class CustomData(DataModule):
         split_dataset = {"train": train_dataset, "val": val_dataset}
 
         def tokenize(data: Dataset, index: int):
-            prompt = Task2prompt % (Task2tokens["text-video"], data[index], "", "", "", "")
-            yield self.tokenizer.encode(prompt, eos=False)
+            yield self.tokenizer.encode(data[index], eos=True)
+            # prompt = Task2prompt % (Task2tokens["text-video"], data[index], "", "", "", "")
+            # yield self.tokenizer.encode(prompt, eos=False)
 
         optimize(
             fn=partial(tokenize, split_dataset["train"]),
