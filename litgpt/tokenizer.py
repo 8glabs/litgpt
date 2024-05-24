@@ -1,6 +1,7 @@
 # Copyright Lightning AI. Licensed under the Apache License 2.0, see LICENSE file.
 
 import json
+import os.path
 from pathlib import Path
 from typing import Optional, Union
 
@@ -71,6 +72,14 @@ class Tokenizer:
         self.eos_id = None
 
         # some checkpoints have both files, `.model` takes precedence
+        if (vocabulary_path := checkpoint_dir / "tokenizer.model").is_file():
+            from transformers import LlamaTokenizer
+            self.processor = LlamaTokenizer.from_pretrained(
+                checkpoint_dir,
+                model_max_length=4096,
+            )
+            self.bos_id = self.processor.bos_token_id
+            self.eos_id = self.processor.eos_token_id
         if (vocabulary_path := checkpoint_dir / "tokenizer.json").is_file():
             from tokenizers import Tokenizer as HFTokenizer
 
@@ -100,6 +109,7 @@ class Tokenizer:
             self.eos_id = self.processor.eos_id()
         else:
             raise NotImplementedError
+        self.checkpoint_dir = checkpoint_dir
         self.add_custom_tokens()
 
     @property
@@ -134,6 +144,8 @@ class Tokenizer:
             raise RuntimeError
 
     def add_custom_tokens(self) -> None:
+        if "-addtokens" in self.checkpoint_dir.name:
+            return
         for modal_special in modal_specials:
             if modal_special not in self.processor.get_vocab():
                 self.add_tokens([modal_special])
@@ -147,6 +159,9 @@ class Tokenizer:
             if start not in self.processor.get_vocab():
                 tokens = [f"<{prefix}{x}>" for x in range(modality_vocab_size)] + [start, end]
                 self.add_tokens(tokens)
+        if not os.path.exists(self.checkpoint_dir+"-addtokens"):
+            os.makedirs(self.checkpoint_dir+"-addtokens", exist_ok=True)
+        self.processor.save_pretrained(self.checkpoint_dir+"-addtokens")
 
     def token_to_id(self, token: str) -> int:
         if self.backend == "huggingface":
