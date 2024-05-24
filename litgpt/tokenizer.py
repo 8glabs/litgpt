@@ -121,6 +121,8 @@ class Tokenizer:
         raise RuntimeError
 
     def vocab_size(self, with_added_tokens=False) -> int:
+        if self.backend == "transformers":
+            return self.processor.vocab_size
         if self.backend == "huggingface" or self.backend == "transformers":
             return self.processor.get_vocab_size(with_added_tokens=with_added_tokens)
         if self.backend == "sentencepiece":
