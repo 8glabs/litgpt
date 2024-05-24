@@ -128,7 +128,7 @@ class Tokenizer:
         raise RuntimeError
 
     def get_vocab(self):
-        if self.backend == "huggingface":
+        if self.backend == "huggingface" or self.backend == "transformers":
             return self.processor.get_vocab()
         if self.backend == "sentencepiece":
             pieces = [self.processor.id_to_piece(id) for id in range(self.processor.get_piece_size())]
