@@ -277,7 +277,7 @@ def fit(
 
         state["iter_num"] += 1
         iter_t0 = time.perf_counter()
-
+        print("train_data.shape:", train_data.shape)
         input_ids = train_data[:, 0 : model.max_seq_length].contiguous().long()
         targets = train_data[:, 1 : (model.max_seq_length + 1)].contiguous().long()
         print("input_ids.shape:", input_ids.shape)
