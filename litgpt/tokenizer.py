@@ -25,7 +25,7 @@ text_vocab_size=32000
 audio_codebook_size=1024
 audio_codebook_num=16
 audio_vocab_size=audio_codebook_size * audio_codebook_num
-visual_vocab_size=2**10
+visual_vocab_size=2**18
 
 Task2tokens = {
     "text-video": f"{task_prefix}0",
