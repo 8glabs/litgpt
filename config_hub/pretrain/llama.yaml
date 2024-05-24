@@ -50,7 +50,7 @@ train:
   max_tokens: 3000000000000
 
   # Limits the number of optimizer steps to run. (type: Optional[int], default: null)
-  max_steps: 10
+  max_steps:
 
   # Limits the length of samples. Off by default (type: Optional[int], default: null)
   max_seq_length: 128
