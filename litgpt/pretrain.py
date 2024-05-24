@@ -281,7 +281,7 @@ def fit(
 
         input_ids = train_data[:, 0 : model.max_seq_length].contiguous().long()
         targets = train_data[:, 1 : (model.max_seq_length + 1)].contiguous().long()
-
+        print("input_ids.shape:", input_ids.shape)
         is_accumulating = state["iter_num"] % train.gradient_accumulation_iters(devices) != 0
         with fabric.no_backward_sync(model, enabled=is_accumulating):
             logits = model(input_ids)
