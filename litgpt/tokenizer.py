@@ -73,14 +73,6 @@ class Tokenizer:
 
         # some checkpoints have both files, `.model` takes precedence
         if (vocabulary_path := checkpoint_dir / "tokenizer.json").is_file():
-            from transformers import LlamaTokenizer
-            self.processor = LlamaTokenizer.from_pretrained(checkpoint_dir)
-            self.processor.pad_token = self.processor.eos_token
-            self.processor.padding_side = "right"
-            self.bos_id = self.processor.bos_token_id
-            self.eos_id = self.processor.eos_token_id
-            self.backend = "transformers"
-        elif (vocabulary_path := checkpoint_dir / "tokenizer.json").is_file():
             from tokenizers import Tokenizer as HFTokenizer
 
             self.processor = HFTokenizer.from_file(str(vocabulary_path))
@@ -100,6 +92,14 @@ class Tokenizer:
                     self.bos_id = config.get("bos_token_id")
                 if self.eos_id is None:
                     self.eos_id = config.get("eos_token_id")
+        elif (vocabulary_path := checkpoint_dir / "tokenizer.json").is_file():
+            from transformers import LlamaTokenizer
+            self.processor = LlamaTokenizer.from_pretrained(checkpoint_dir)
+            self.processor.pad_token = self.processor.eos_token
+            self.processor.padding_side = "right"
+            self.bos_id = self.processor.bos_token_id
+            self.eos_id = self.processor.eos_token_id
+            self.backend = "transformers"
         elif (vocabulary_path := checkpoint_dir / "tokenizer.model").is_file():
             from sentencepiece import SentencePieceProcessor
 
@@ -163,9 +163,9 @@ class Tokenizer:
             if start not in self.processor.get_vocab():
                 tokens = [f"<{prefix}{x}>" for x in range(modality_vocab_size)] + [start, end]
                 self.add_tokens(tokens)
-        if not os.path.exists(str(self.checkpoint_dir)+"-addtokens"):
-            os.makedirs(str(self.checkpoint_dir)+"-addtokens", exist_ok=True)
-        self.processor.save_pretrained(str(self.checkpoint_dir)+"-addtokens")
+        # if not os.path.exists(str(self.checkpoint_dir)+"-addtokens"):
+        #     os.makedirs(str(self.checkpoint_dir)+"-addtokens", exist_ok=True)
+        # self.processor.save_pretrained(str(self.checkpoint_dir)+"-addtokens")
         # self.processor.save(str(self.checkpoint_dir)+"-addtokens"+"/tokenizer.json")
         # with open(str(self.checkpoint_dir)+"-addtokens"+"/tokenizer.json", "w") as f:
         #     json.dump(self.processor.config.to_dict(), f)
