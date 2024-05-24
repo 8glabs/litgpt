@@ -158,11 +158,11 @@ def main(
 
     fabric.seed_everything(seed)  # same seed for every process to init model (FSDP)
 
-    # embedding_size = config.padded_vocab_size
-    # print("vocab_size:", tokenizer.vocab_size(with_added_tokens=True))
-    # print("vocab_size:", tokenizer.vocab_size(with_added_tokens=False))
-    # if tokenizer.vocab_size(with_added_tokens=True) > embedding_size:
-    #     config.padded_vocab_size = tokenizer.vocab_size(with_added_tokens=True)
+    embedding_size = config.padded_vocab_size
+    print("vocab_size:", tokenizer.vocab_size(with_added_tokens=True))
+    print("vocab_size:", tokenizer.vocab_size(with_added_tokens=False))
+    if tokenizer.vocab_size(with_added_tokens=True) > embedding_size:
+        config.padded_vocab_size = tokenizer.vocab_size(with_added_tokens=True)
     t0 = time.perf_counter()
     with fabric.init_module(empty_init=True):
         model = GPT(config)
