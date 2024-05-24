@@ -6,6 +6,59 @@ from typing import Optional, Union
 
 import torch
 
+text_prefix = ""
+audio_prefix = "👂"
+video_prefix = "📹"
+task_prefix = "📋"
+
+start_of_seq, end_of_seq = '<sos>', '<eos>'
+start_of_text, end_of_text = '<bot_i>', '<eot_i>'
+start_of_input_visual, end_of_input_visual = '<bov_i>', '<eov_i>'
+start_of_input_audio, end_of_input_audio = '<boa_i>', '<eoa_i>'
+source_of_video = '<source>'
+resolution_of_video = '<res>'
+start_of_output_visual, end_of_output_visual = '<bov_o>', '<eov_o>'
+start_of_output_audio, end_of_output_audio = '<boa_o>', '<eoa_o>'
+modal_specials = [start_of_seq, end_of_seq, start_of_text, end_of_text, source_of_video, resolution_of_video, start_of_output_visual, end_of_output_visual, start_of_output_audio, end_of_output_audio]
+
+text_vocab_size=32000
+audio_codebook_size=1024
+audio_codebook_num=16
+audio_vocab_size=audio_codebook_size * audio_codebook_num
+visual_vocab_size=2**10
+
+Task2tokens = {
+    "text-video": f"{task_prefix}0",
+    "image-vodeo": f"{task_prefix}1",
+    "unconditional video": f"{task_prefix}2",
+    "Audioavatar talkingheads": f"{task_prefix}3",
+    "Audioavatar singingheads": f"{task_prefix}4",
+    "text-image": f"{task_prefix}5",
+}
+
+# task_id, text, input_visual, input_audio, output_visual, output_audio
+Task2prompt = f"{start_of_seq}%s{start_of_text}%s{end_of_text}{start_of_input_visual}%s{end_of_input_visual}{start_of_input_audio}%s{end_of_input_audio}{source_of_video}{resolution_of_video}{start_of_output_visual}%s{end_of_output_visual}{start_of_output_audio}%s{end_of_output_audio}{end_of_seq}"
+
+modal_special_str = {
+    "text":{
+        "prefix": text_prefix,
+        "sos": start_of_text,
+        "eos": end_of_text,
+        "vocab_size": text_vocab_size
+    },
+    "audio":{
+        "prefix": audio_prefix,
+        "sos": start_of_input_audio,
+        "eos": end_of_input_audio,
+        "vocab_size": audio_vocab_size
+    },
+    "visual":{
+        "prefix": video_prefix,
+        "sos": start_of_input_visual,
+        "eos": end_of_input_visual,
+        "vocab_size": visual_vocab_size
+    },
+}
 
 class Tokenizer:
     def __init__(self, checkpoint_dir: Union[Path, str]) -> None:
@@ -25,7 +78,6 @@ class Tokenizer:
             self.backend = "sentencepiece"
             self.bos_id = self.processor.bos_id()
             self.eos_id = self.processor.eos_id()
-
         elif (vocabulary_path := checkpoint_dir / "tokenizer.json").is_file():
             from tokenizers import Tokenizer as HFTokenizer
 
@@ -36,9 +88,9 @@ class Tokenizer:
                 with open(special_tokens_path, encoding="utf-8") as fp:
                     config = json.load(fp)
                 bos_token = config.get("bos_token")
-                self.bos_id = self.token_to_id(bos_token) if bos_token is not None else None
+                self.bos_id = self.token_to_id(bos_token["content"]) if bos_token is not None else None
                 eos_token = config.get("eos_token")
-                self.eos_id = self.token_to_id(eos_token) if eos_token is not None else None
+                self.eos_id = self.token_to_id(eos_token["content"]) if eos_token is not None else None
             if (special_tokens_path := checkpoint_dir / "generation_config.json").is_file():
                 with open(special_tokens_path, encoding="utf-8") as fp:
                     config = json.load(fp)
@@ -56,6 +108,45 @@ class Tokenizer:
         if self.backend == "sentencepiece":
             return self.processor.vocab_size()
         raise RuntimeError
+
+    def vocab_size(self, with_added_tokens=False) -> int:
+        if self.backend == "huggingface":
+            return self.processor.get_vocab_size(with_added_tokens=with_added_tokens)
+        if self.backend == "sentencepiece":
+            return self.processor.vocab_size()
+        raise RuntimeError
+
+    def get_vocab(self):
+        if self.backend == "huggingface":
+            return self.processor.get_vocab()
+        if self.backend == "sentencepiece":
+            pieces = [self.processor.id_to_piece(id) for id in range(self.processor.get_piece_size())]
+            return pieces
+        raise RuntimeError
+
+    def add_tokens(self, tokens):
+        if self.backend == "huggingface":
+            self.processor.add_tokens(tokens)
+        elif self.backend == "sentencepiece":
+            raise NotImplementedError
+        else:
+            raise RuntimeError
+
+    def add_custom_tokens(self) -> None:
+        return
+        for modal_special in modal_specials:
+            if modal_special not in self.processor.get_vocab():
+                self.add_tokens([modal_special])
+        for modality in modal_special_str.keys():
+            if modality == "text":
+                continue
+            prefix = modal_special_str[modality]["prefix"]
+            start = modal_special_str[modality]["sos"]
+            end = modal_special_str[modality]["eos"]
+            modality_vocab_size = modal_special_str[modality]["vocab_size"]
+            if start not in self.processor.get_vocab():
+                tokens = [f"<{prefix}{x}>" for x in range(modality_vocab_size)] + [start, end]
+                self.add_tokens(tokens)
 
     def token_to_id(self, token: str) -> int:
         if self.backend == "huggingface":
