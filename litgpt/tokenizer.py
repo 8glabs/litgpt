@@ -136,7 +136,7 @@ class Tokenizer:
         raise RuntimeError
 
     def add_tokens(self, tokens):
-        if self.backend == "huggingface" and self.backend == "transformers":
+        if self.backend == "huggingface" or self.backend == "transformers":
             self.processor.add_tokens(tokens)
         elif self.backend == "sentencepiece":
             raise NotImplementedError
