@@ -114,14 +114,14 @@ class Tokenizer:
 
     @property
     def vocab_size(self) -> int:
-        if self.backend == "huggingface":
+        if self.backend == "huggingface" or self.backend == "transformers":
             return self.processor.get_vocab_size(with_added_tokens=False)
         if self.backend == "sentencepiece":
             return self.processor.vocab_size()
         raise RuntimeError
 
     def vocab_size(self, with_added_tokens=False) -> int:
-        if self.backend == "huggingface":
+        if self.backend == "huggingface" or self.backend == "transformers":
             return self.processor.get_vocab_size(with_added_tokens=with_added_tokens)
         if self.backend == "sentencepiece":
             return self.processor.vocab_size()
