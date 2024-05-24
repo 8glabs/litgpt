@@ -73,8 +73,10 @@ class Tokenizer:
 
         # some checkpoints have both files, `.model` takes precedence
         if (vocabulary_path := checkpoint_dir / "tokenizer.json").is_file():
-            from transformers import LlamaTokenizer
-            self.processor = LlamaTokenizer.from_pretrained(str(vocabulary_path))
+            from transformers import AutoTokenizer
+            self.processor = AutoTokenizer.from_pretrained(
+                checkpoint_dir,
+            )
             self.processor.pad_token = self.processor.eos_token
             self.processor.padding_side = "right"
             self.bos_id = self.processor.bos_token_id
@@ -161,7 +163,7 @@ class Tokenizer:
                 self.add_tokens(tokens)
         if not os.path.exists(str(self.checkpoint_dir)+"-addtokens"):
             os.makedirs(str(self.checkpoint_dir)+"-addtokens", exist_ok=True)
-        self.processor.save(str(self.checkpoint_dir)+"-addtokens/tokenizer.json")
+        self.processor.save_pretrained(str(self.checkpoint_dir)+"-addtokens")
 
     def token_to_id(self, token: str) -> int:
         if self.backend == "huggingface":
