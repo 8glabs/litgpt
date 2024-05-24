@@ -44,13 +44,13 @@ train:
   lr_warmup_steps: 2000
 
   # Number of epochs to train on (type: Optional[int], default: null)
-  epochs:
+  epochs: 1
 
   # Total number of tokens to train on (type: Optional[int], default: 3000000000000)
   max_tokens: 3000000000000
 
   # Limits the number of optimizer steps to run. (type: Optional[int], default: null)
-  max_steps:
+  max_steps: 10
 
   # Limits the length of samples. Off by default (type: Optional[int], default: null)
   max_seq_length: 128
