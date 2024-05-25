@@ -61,6 +61,8 @@ def setup(
         min_lr=4e-5,
         lr_warmup_steps=2000,
         tie_embeddings=False,
+        epochs=None,
+        max_steps=None,
     ),
     eval: EvalArgs = EvalArgs(interval=1000, max_iters=100),
     devices: Union[int, str] = "auto",
