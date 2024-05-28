@@ -45,7 +45,8 @@ class CustomDatasetForUnconditionedVideo(Dataset):
         video_token_path = self.video_token_paths[index]
         with np.load(video_token_path) as data:
             # 获取名为 'data' 的 NumPy 数组
-            quantized = data['data']
+            quantized = data['data'].reshape(-1)
+            # reconstructed_array = quantized.reshape(array.shape)
         return quantized
 
 
