@@ -5,9 +5,10 @@ from functools import partial
 from pathlib import Path
 from typing import Optional, Union
 
+import numpy as np
 from torch.utils.data import Dataset, DataLoader, random_split
 
-from litgpt import Tokenizer, Task2prompt, Task2tokens
+from litgpt import Tokenizer, Task2prompt, Task2tokens, modality_tokens_to_string
 from litgpt.data import DataModule
 
 # 自定义数据集类
@@ -31,11 +32,28 @@ class CustomDataset(Dataset):
         return self.lines[index].strip()
 
 
+class CustomDatasetForUnconditionedVideo(Dataset):
+    def __init__(self, folder_path):
+        self.video_token_paths = [os.path.join(folder_path, video_id, "result.npz") for video_id in os.listdir(folder_path)]
+
+    def __len__(self):
+        # 返回数据集中的行数
+        return len(self.video_token_paths)
+
+    def __getitem__(self, index):
+        # 获取并返回指定索引的行内容
+        video_token_path = self.video_token_paths[index]
+        with np.load(video_token_path) as data:
+            # 获取名为 'data' 的 NumPy 数组
+            quantized = data['data']
+        return quantized
+
+
 @dataclass
 class CustomData(DataModule):
     """The CustomData data module for pretraining."""
 
-    data_path: Union[str, Path] = Path("data/custom_data")
+    data_path: Union[str, Path] = Path("/app/wen/litgpt/data/video_tokens")
     """The path to the data directory, containing two folders 'train' and 'val'
     which are the output of the preprocessing step. The path can also be a remote path (e.g., s3://)."""
     val_split_fraction: float = 0.2
@@ -73,7 +91,11 @@ class CustomData(DataModule):
             print(f"Found CustomData train and val dir: {self.data_path}. Skipping preprocessing.")
             return
 
-        dataset = CustomDataset(self.data_path)
+        mode="unconditional video"
+        if mode == "unconditional video":
+            dataset = CustomDatasetForUnconditionedVideo(self.data_path)
+        else:
+            dataset = CustomDataset(self.data_path)
         # 计算训练集和验证集的大小
         val_size = int(self.val_split_fraction * len(dataset))
         train_size = len(dataset) - val_size
@@ -81,23 +103,28 @@ class CustomData(DataModule):
         train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
         split_dataset = {"train": train_dataset, "val": val_dataset}
 
-        def tokenize(data: Dataset, index: int):
+        def tokenize(data: Dataset, model: str, index: int):
             # yield self.tokenizer.encode(data[index], eos=True)
-            prompt = Task2prompt % (Task2tokens["text-video"], data[index], "aaa"*5*16*16, "bbb"*16*1024, "", "")
+            if mode == "unconditional video":
+                video_token = data[index]
+                video_token_str = modality_tokens_to_string(video_token)
+                prompt = Task2prompt % (Task2tokens["unconditionedVideo"], "", "", "", video_token_str, "")
+            else:
+                prompt = Task2prompt % (Task2tokens["text-video"], data[index], "aaa"*5*16*16, "bbb"*16*1024, "", "")
             print(prompt)
             # if len(prompt) != self.seq_length:
             #     prompt = (prompt+" aaaa"*self.seq_length)[: self.seq_length]
             yield self.tokenizer.encode(prompt, eos=False)
 
         optimize(
-            fn=partial(tokenize, split_dataset["train"]),
+            fn=partial(tokenize, split_dataset["train"], mode),
             inputs=list(range(len(split_dataset["train"]))),
             output_dir=self.data_path_train,
             num_workers=(self.num_workers),
             chunk_bytes="200MB",
         )
         optimize(
-            fn=partial(tokenize, split_dataset["val"]),
+            fn=partial(tokenize, split_dataset["val"], mode),
             inputs=list(range(len(split_dataset["val"]))),
             output_dir=self.data_path_val,
             num_workers=(self.num_workers),

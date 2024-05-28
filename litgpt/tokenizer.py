@@ -61,6 +61,20 @@ modal_special_str = {
     },
 }
 
+
+def modality_tokens_to_string(tokens, modality="visual"):
+    """
+    Convert visual tokens to a single string with prefix and postfix.
+    """
+    prefix = modal_special_str[modality]["prefix"]
+
+    if modality == "video":
+        # Convert each token to its corresponding string representation
+        tokens_str = [f"<{prefix}{token}>" for token in tokens]
+        # Join the token strings and add <soim> at the beginning and <eoim> at the end
+    return "".join(tokens_str)
+
+
 class Tokenizer:
     def __init__(self, checkpoint_dir: Union[Path, str]) -> None:
         checkpoint_dir = Path(checkpoint_dir)
