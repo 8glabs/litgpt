@@ -109,7 +109,7 @@ class CustomData(DataModule):
             if mode == "unconditional video":
                 video_token = data[index]
                 video_token_str = modality_tokens_to_string(video_token)
-                prompt = Task2prompt % (Task2tokens["unconditionedVideo"], "", "", "", video_token_str, "")
+                prompt = Task2prompt % (Task2tokens["unconditional video"], "", "", "", video_token_str, "")
             else:
                 prompt = Task2prompt % (Task2tokens["text-video"], data[index], "aaa"*5*16*16, "bbb"*16*1024, "", "")
             print(prompt)
