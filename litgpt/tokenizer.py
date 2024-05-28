@@ -67,7 +67,7 @@ def modality_tokens_to_string(tokens, modality="visual"):
     Convert visual tokens to a single string with prefix and postfix.
     """
     prefix = modal_special_str[modality]["prefix"]
-
+    tokens_str = ""
     if modality == "video":
         # Convert each token to its corresponding string representation
         tokens_str = [f"<{prefix}{token}>" for token in tokens]
