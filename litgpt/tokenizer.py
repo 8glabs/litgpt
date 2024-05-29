@@ -167,6 +167,9 @@ class Tokenizer:
         for modal_special in modal_specials:
             if modal_special not in self.processor.get_vocab():
                 self.add_tokens([modal_special])
+
+        self.add_tokens([f"{task_prefix}{task_token}" for task_token in range(256)])
+
         for modality in modal_special_str.keys():
             if modality == "text":
                 continue
