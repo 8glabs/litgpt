@@ -186,10 +186,12 @@ class Tokenizer:
         # self.processor.save(str(self.checkpoint_dir)+"-addtokens"+"/tokenizer.json")
         # with open(str(self.checkpoint_dir)+"-addtokens"+"/tokenizer.json", "w") as f:
         #     json.dump(self.processor.config.to_dict(), f)
-        # file_path = './token_map.json'
-        # # 将字典写入JSON文件
-        # with open(file_path, 'w', encoding='utf-8') as file:
-        #     json.dump(self.processor.get_vocab(), file, ensure_ascii=False, indent=4)
+        file_path = './token_map.json'
+        token_map = self.processor.get_vocab()
+        token_map = dict(sorted(token_map.items(), key=lambda item: item[1]))
+        # 将字典写入JSON文件
+        with open(file_path, 'w', encoding='utf-8') as file:
+            json.dump(token_map, file, ensure_ascii=False, indent=4)
 
     def token_to_id(self, token: str) -> int:
         if self.backend == "huggingface":
